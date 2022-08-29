@@ -3,6 +3,7 @@ import numpy as np
 import requests
 import logging
 import common
+from covid19_anomaly_detection import credentials
 
 dataset = '100073'
 date_column = 'timestamp'
@@ -53,8 +54,12 @@ class Dataset:
         # requests.get(url='https://data.bs.ch/api/management/v2/datasets/da_g8lxgy',
         #              auth=(credentials.username, credentials.password))),
         # To do: read out last modified, compare with time
-        ods_uid = common.get_ods_uid_by_id(ods_id=self.dataset, creds=None)
+        ods_uid = common.get_ods_uid_by_id(ods_id=self.dataset, creds=credentials)
         url = f'https://data.bs.ch/api/management/v2/datasets/{ods_uid}'
+        req = common.requests_get(url, auth=(credentials.user_name, credentials.password))
+        file = req.json()
+        last_update = file['last_modified']
+        self.data_structure['last_update'] = last_update
 
     def analyze_data(self):
         self.data_structure['column_names'] = list(self.data.columns)
@@ -145,3 +150,4 @@ if __name__ == "__main__":
     fz.largest_difference()
     fz.largest_percentage()
     print(fz.data_structure)
+    fz.check_latest_update()
